@@ -55,25 +55,29 @@
   }
 
   zepto.qsa = function(node, selector) {
-    return process(selector, function(sel, filter, arg){
-      try {
-        var taggedParent
-        if (!sel && filter) sel = '*'
-        else if (childRe.test(sel))
-          // support "> *" child queries by tagging the parent node with a
-          // unique class and prepending that classname onto the selector
-          taggedParent = $(node).addClass(classTag), sel = '.'+classTag+' '+sel
-
-        var nodes = oldQsa(node, sel)
-      } catch(e) {
-        console.error('error performing selector: %o', selector)
-        throw e
-      } finally {
-        if (taggedParent) taggedParent.removeClass(classTag)
-      }
-      return !filter ? nodes :
-        zepto.uniq($.map(nodes, function(n, i){ return filter.call(n, i, nodes, arg) }))
-    })
+  	var collection = $( $.map(selector.split(','), function(s, i) {
+  		return process($.trim(s), function(sel, filter, arg){
+  			try {
+  				var taggedParent
+  				if (!sel && filter) sel = '*'
+  				else if (childRe.test(sel))
+  				  // support "> *" child queries by tagging the parent node with a
+  				  // unique class and prepending that classname onto the selector
+  				  taggedParent = $(node).addClass(classTag), sel = '.'+classTag+' '+sel
+  
+  				var nodes = oldQsa(node, sel)
+  			} catch(e) {
+  				console.error('error performing selector: %o', selector)
+  				throw e
+  			} finally {
+  				if (taggedParent) taggedParent.removeClass(classTag)
+  			}
+  			return !filter ? nodes :
+  				zepto.uniq($.map(nodes, function(n, i){ return filter.call(n, i, nodes, arg) }))
+  		})
+  	}) )
+  	
+  	return $.extend(collection, {selector: selector});
   }
 
   zepto.matches = function(node, selector){
